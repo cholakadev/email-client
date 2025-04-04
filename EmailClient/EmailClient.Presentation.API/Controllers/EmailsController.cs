@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EmailClient.Presentation.API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("/api/[controller]")]
     public class EmailsController : ControllerBase
     {
         [HttpGet]

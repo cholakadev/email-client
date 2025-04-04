@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Requests\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EmailClient.Core\EmailClient.Core.csproj" />
+  </ItemGroup>
+
 </Project>
