@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34616.47
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailClient.Presentation.API", "EmailClient.Presentation.API\EmailClient.Presentation.API.csproj", "{72FBFB5C-51A6-43A7-99CF-37AE361784A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailClient.Core", "EmailClient.Core\EmailClient.Core.csproj", "{A501D332-BD13-4758-AA92-753C82C03267}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailClient.Infrastructure", "EmailClient.Infrastructure\EmailClient.Infrastructure.csproj", "{E59B77BC-736A-4B1A-A5C6-040970772BE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailClient.Services", "EmailClient.Services\EmailClient.Services.csproj", "{8ECB8300-742E-40CA-85F7-062481EAA0F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailClient.Contracts", "EmailClient.Contracts\EmailClient.Contracts.csproj", "{5A129287-6169-4F4C-94D9-1992A1D0E80A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailClient.Tests", "EmailClient.Tests\EmailClient.Tests.csproj", "{EF83BC66-C905-461C-AF65-09CF875AB23B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72FBFB5C-51A6-43A7-99CF-37AE361784A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72FBFB5C-51A6-43A7-99CF-37AE361784A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72FBFB5C-51A6-43A7-99CF-37AE361784A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72FBFB5C-51A6-43A7-99CF-37AE361784A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A501D332-BD13-4758-AA92-753C82C03267}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A501D332-BD13-4758-AA92-753C82C03267}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A501D332-BD13-4758-AA92-753C82C03267}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A501D332-BD13-4758-AA92-753C82C03267}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E59B77BC-736A-4B1A-A5C6-040970772BE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E59B77BC-736A-4B1A-A5C6-040970772BE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E59B77BC-736A-4B1A-A5C6-040970772BE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E59B77BC-736A-4B1A-A5C6-040970772BE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8ECB8300-742E-40CA-85F7-062481EAA0F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8ECB8300-742E-40CA-85F7-062481EAA0F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8ECB8300-742E-40CA-85F7-062481EAA0F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8ECB8300-742E-40CA-85F7-062481EAA0F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A129287-6169-4F4C-94D9-1992A1D0E80A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A129287-6169-4F4C-94D9-1992A1D0E80A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A129287-6169-4F4C-94D9-1992A1D0E80A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A129287-6169-4F4C-94D9-1992A1D0E80A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF83BC66-C905-461C-AF65-09CF875AB23B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF83BC66-C905-461C-AF65-09CF875AB23B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF83BC66-C905-461C-AF65-09CF875AB23B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF83BC66-C905-461C-AF65-09CF875AB23B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CE82B8CC-B0E0-4290-9856-07860C5C4D16}
+	EndGlobalSection
+EndGlobal
