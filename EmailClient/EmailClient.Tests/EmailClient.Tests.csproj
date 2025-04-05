@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EmailClient.Contracts\EmailClient.Contracts.csproj" />
     <ProjectReference Include="..\EmailClient.Core\EmailClient.Core.csproj" />
     <ProjectReference Include="..\EmailClient.Infrastructure\EmailClient.Infrastructure.csproj" />
     <ProjectReference Include="..\EmailClient.Presentation.API\EmailClient.Presentation.API.csproj" />

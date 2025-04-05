@@ -1,6 +1,6 @@
 ﻿using EmailClient.Core.DTOs;
 
-namespace EmailClient.Contracts.Responses
+namespace EmailClient.Core.Responses
 {
     public class EmailResponse
     {

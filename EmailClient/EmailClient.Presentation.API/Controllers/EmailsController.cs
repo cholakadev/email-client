@@ -1,3 +1,5 @@
+using EmailClient.Core.Interfaces;
+using EmailClient.Core.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmailClient.Presentation.API.Controllers
@@ -6,6 +8,13 @@ namespace EmailClient.Presentation.API.Controllers
     [Route("/api/[controller]")]
     public class EmailsController : ControllerBase
     {
+        private readonly IEmailService _emailService;
+
+        public EmailsController(IEmailService emailService)
+        {
+            _emailService = emailService;
+        }
+
         [HttpGet]
         public object GetEmailSubjects()
         {
@@ -19,9 +28,19 @@ namespace EmailClient.Presentation.API.Controllers
         }
 
         [HttpPost]
-        public object SendEmailAsync(object emailInfo)
+        public object SendEmailAsync(EmailMessageRequest request)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _emailService.SendEmailAsync(request);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
     }
 }

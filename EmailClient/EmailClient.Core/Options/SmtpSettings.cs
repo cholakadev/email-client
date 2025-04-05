@@ -2,7 +2,7 @@
 {
     public class SmtpSettings
     {
-        public const string SectionKey = nameof(ImapSettings);
+        public const string SectionKey = nameof(SmtpSettings);
 
         public string Host { get; set; } = string.Empty;
 

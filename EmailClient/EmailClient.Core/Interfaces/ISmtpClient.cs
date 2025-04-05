@@ -1,7 +1,9 @@
-﻿namespace EmailClient.Core.Interfaces
+﻿using EmailClient.Core.DTOs;
+
+namespace EmailClient.Core.Interfaces
 {
     public interface ISmtpClient
     {
-        Task SendEmail();
+        Task SendEmailAsync(EmailMessage message);
     }
 }

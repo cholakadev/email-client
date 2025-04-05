@@ -1,4 +1,6 @@
-﻿namespace EmailClient.Core.Interfaces
+﻿using EmailClient.Core.Requests;
+
+namespace EmailClient.Core.Interfaces
 {
     public interface IEmailService
     {
@@ -6,6 +8,6 @@
 
         Task GetEmailByIdAsync();
 
-        Task SendEmailAsync();
+        Task SendEmailAsync(EmailMessageRequest request);
     }
 }
