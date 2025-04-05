@@ -58,8 +58,8 @@ namespace EmailClient.Infrastructure
             var secureStreamContext = await EstablishSecureConnectionAsync(networkStream, _settings.CurrentValue.Host);
 
             // Authenticates with Base64 credentials and transmits the email message with the sender and recipient data
-            await AuthenticateAsync(secureStreamContext.Reader, secureStreamContext.Writer, _settings.CurrentValue.Username, _settings.CurrentValue.Password);
-            await SendEmailDataAsync(secureStreamContext.Reader, secureStreamContext.Writer, message);
+            await AuthenticateAsync(secureStreamContext, _settings.CurrentValue.Username, _settings.CurrentValue.Password);
+            await SendEmailDataAsync(secureStreamContext, message);
         }
 
         /// <summary>
@@ -105,29 +105,29 @@ namespace EmailClient.Infrastructure
                 throw new Exception($"{nameof(SmtpCommands.StartTls)} failed");
         }
 
-        private async Task SendEmailDataAsync(StreamReader reader, StreamWriter writer, EmailMessage message)
+        private async Task SendEmailDataAsync(SecureStreamContext context, EmailMessage message)
         {
-            await SendCommandAsync(writer, SmtpCommands.MailFrom.Replace("%%email%%", message.From));
-            var mailFromResponse = await ReadResponseAsync(reader);
+            await SendCommandAsync(context.Writer, SmtpCommands.MailFrom.Replace("%%email%%", message.From));
+            var mailFromResponse = await ReadResponseAsync(context.Reader);
 
             if (!mailFromResponse.StartsWith(SmtpResponseCodes.Ok))
                 throw new ArgumentException($"MAIL FROM rejected: {mailFromResponse}");
 
-            await SendCommandAsync(writer, SmtpCommands.RcptTo.Replace("%%email%%", message.To));
-            var rcptToResponse = await ReadResponseAsync(reader);
+            await SendCommandAsync(context.Writer, SmtpCommands.RcptTo.Replace("%%email%%", message.To));
+            var rcptToResponse = await ReadResponseAsync(context.Reader);
 
             if (!rcptToResponse.StartsWith(SmtpResponseCodes.Ok))
                 throw new Exception($"RCPT TO rejected: {rcptToResponse}");
 
-            await SendCommandAsync(writer, SmtpCommands.Data);
-            var dataResponse = await ReadResponseAsync(reader);
+            await SendCommandAsync(context.Writer, SmtpCommands.Data);
+            var dataResponse = await ReadResponseAsync(context.Reader);
 
             // 354 indicates that the client /localhost/ can start sending the data)
             if (!dataResponse.StartsWith(SmtpResponseCodes.StartMailInput))
                 throw new Exception($"DATA command rejected: {dataResponse}");
 
-            await SendEmailContentAsync(writer, reader, message);
-            await TerminateConnectionAsync(writer, reader);
+            await SendEmailContentAsync(context, message);
+            await TerminateConnectionAsync(context);
         }
 
         /// <summary>
@@ -140,22 +140,22 @@ namespace EmailClient.Infrastructure
         /// <exception cref="AuthenticationException">
         /// Thrown if the server does not prompt for username/password properly, or authentication fails.
         /// </exception>
-        private async Task AuthenticateAsync(StreamReader reader, StreamWriter writer, string username, string password)
+        private async Task AuthenticateAsync(SecureStreamContext context, string username, string password)
         {
-            await SendCommandAsync(writer, SmtpCommands.AuthLogin);
-            var usernamePrompt = await ReadResponseAsync(reader);
+            await SendCommandAsync(context.Writer, SmtpCommands.AuthLogin);
+            var usernamePrompt = await ReadResponseAsync(context.Reader);
 
             if (!usernamePrompt.StartsWith(SmtpResponseCodes.CredentialsPrompt))
                 throw new AuthenticationException($"Expected {SmtpResponseCodes.CredentialsPrompt} Username prompt, got: {usernamePrompt}");
 
-            await SendCommandAsync(writer, Convert.ToBase64String(Encoding.UTF8.GetBytes(username)));
-            var passwordPrompt = await ReadResponseAsync(reader);
+            await SendCommandAsync(context.Writer, Convert.ToBase64String(Encoding.UTF8.GetBytes(username)));
+            var passwordPrompt = await ReadResponseAsync(context.Reader);
 
             if (!passwordPrompt.StartsWith(SmtpResponseCodes.CredentialsPrompt))
                 throw new AuthenticationException($"Expected {SmtpResponseCodes.CredentialsPrompt} Password prompt, got: {passwordPrompt}");
 
-            await SendCommandAsync(writer, Convert.ToBase64String(Encoding.UTF8.GetBytes(password)));
-            var authResponse = await ReadResponseAsync(reader);
+            await SendCommandAsync(context.Writer, Convert.ToBase64String(Encoding.UTF8.GetBytes(password)));
+            var authResponse = await ReadResponseAsync(context.Reader);
 
             if (!authResponse.StartsWith(SmtpResponseCodes.AuthSuccess))
                 throw new AuthenticationException($"Authentication failed: {authResponse}.");
@@ -166,17 +166,17 @@ namespace EmailClient.Infrastructure
         /// </summary>
         /// <param name="writer">The stream writer used to write to the SMTP server.</param>
         /// <param name="message">The email message to be sent.</param>
-        private async Task SendEmailContentAsync(StreamWriter writer, StreamReader reader, EmailMessage message)
+        private async Task SendEmailContentAsync(SecureStreamContext context, EmailMessage message)
         {
-            await writer.WriteLineAsync($"Subject: {message.Subject}");
-            await writer.WriteLineAsync($"To: {message.To}");
-            await writer.WriteLineAsync(SmtpCommands.ContentTypePlainText);
-            await writer.WriteLineAsync(""); // Empty line to separate headers from body
-            await writer.WriteLineAsync(message.Body);
-            await writer.WriteLineAsync(SmtpCommands.EndOfLineIndicator); // Indicates end of message
-            await writer.FlushAsync();
+            await context.Writer.WriteLineAsync($"Subject: {message.Subject}");
+            await context.Writer.WriteLineAsync($"To: {message.To}");
+            await context.Writer.WriteLineAsync(SmtpCommands.ContentTypePlainText);
+            await context.Writer.WriteLineAsync(""); // Empty line to separate headers from body
+            await context.Writer.WriteLineAsync(message.Body);
+            await context.Writer.WriteLineAsync(SmtpCommands.EndOfLineIndicator); // Indicates end of message
+            await context.Writer.FlushAsync();
 
-            var contentAcceptedResponse = await ReadResponseAsync(reader);
+            var contentAcceptedResponse = await ReadResponseAsync(context.Reader);
 
             if (!contentAcceptedResponse.StartsWith(SmtpResponseCodes.Ok))
                 throw new Exception($"Email content was not accepted by the server: {contentAcceptedResponse}");
@@ -187,10 +187,10 @@ namespace EmailClient.Infrastructure
         /// </summary>
         /// <param name="writer">The stream writer used to write to the SMTP server.</param>
         /// <param name="writer">The stream reader used to write to the SMTP server.</param>
-        private async Task TerminateConnectionAsync(StreamWriter writer, StreamReader reader)
+        private async Task TerminateConnectionAsync(SecureStreamContext context)
         {
-            await SendCommandAsync(writer, SmtpCommands.Quit);
-            var quitResponse = await ReadResponseAsync(reader);
+            await SendCommandAsync(context.Writer, SmtpCommands.Quit);
+            var quitResponse = await ReadResponseAsync(context.Reader);
 
             if (!quitResponse.StartsWith(SmtpResponseCodes.Bye))
                 throw new Exception($"Unexpected response after QUIT: {quitResponse}");
