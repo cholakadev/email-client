@@ -59,3 +59,4 @@ Paste this into your root `appsettings.json` file and **replace with your own cr
 ## Reference
 
 - [RFC 5321 – Simple Mail Transfer Protocol (SMTP)](https://datatracker.ietf.org/doc/html/rfc5321)
+- [How does SMTP work](https://mailtrap.io/blog/smtp/#:~:text=SMTP%20or%20Simple%20Mail%20Transfer,defining%20the%20rules%20of%20communication.)
