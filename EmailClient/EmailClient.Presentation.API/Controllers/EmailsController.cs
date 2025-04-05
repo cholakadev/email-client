@@ -16,31 +16,22 @@ namespace EmailClient.Presentation.API.Controllers
         }
 
         [HttpGet]
-        public object GetEmailSubjects()
+        public async Task<IResult> GetEmailSubjects()
         {
             throw new NotImplementedException();
         }
 
         [HttpGet("{id}")]
-        public object GetEmailById(Guid id)
+        public async Task<IResult> GetEmailById(Guid id)
         {
             throw new NotImplementedException();
         }
 
         [HttpPost]
-        public object SendEmailAsync(EmailMessageRequest request)
+        public async Task<IResult> SendEmailAsync(EmailMessageRequest request)
         {
-            try
-            {
-                _emailService.SendEmailAsync(request);
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
+            await _emailService.SendEmailAsync(request);
+            return Results.Ok();
         }
     }
 }
