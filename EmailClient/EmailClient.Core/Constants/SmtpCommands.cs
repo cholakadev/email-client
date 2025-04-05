@@ -1,4 +1,4 @@
-﻿namespace EmailClient.Core
+﻿namespace EmailClient.Core.Constants
 {
     public static class SmtpCommands
     {
