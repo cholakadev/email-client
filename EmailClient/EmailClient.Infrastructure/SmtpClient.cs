@@ -87,7 +87,7 @@ namespace EmailClient.Infrastructure
 
             await ReadResponseAsync(reader); // Expect 250
 
-            await SendCommandAsync(writer, "QUIT"); // Terminated the SMTP connection with QUIT command
+            await SendCommandAsync(writer, SmtpCommands.Quit); // Terminated the SMTP connection with QUIT command
             await ReadResponseAsync(reader); // Expect 221
         }
 
