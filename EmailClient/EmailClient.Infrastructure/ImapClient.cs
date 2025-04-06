@@ -57,7 +57,7 @@ namespace EmailClient.Infrastructure
             var inboxTag = GetNextTag();
             var inboxResponse = await SendCommand(writer, reader, inboxTag, "SELECT INBOX");
             if (!inboxResponse.Contains("OK"))
-                throw new Exception("Failed to select inbox: " + inboxResponse);
+                throw new Exception($"Failed to select inbox: {inboxResponse}.");
 
             // Search for all messages
             var searchTag = GetNextTag();
