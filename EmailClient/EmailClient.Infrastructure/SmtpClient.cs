@@ -36,7 +36,7 @@ namespace EmailClient.Infrastructure
         /// </remarks>
         /// <exception cref="Exception">Thrown if the server does not respond with expected SMTP response codes during all of the phases.</exception>
         /// <exception cref="AuthenticationException">Thrown if authentication with the SMTP server fails.</exception>
-        public async Task SendEmailAsync(EmailMessage message)
+        public async Task SendEmailAsync(EmailMessageDto message)
         {
             // Establishes TCP connection with the SMTP server
             using var tcpClient = new TcpClient();
@@ -69,7 +69,7 @@ namespace EmailClient.Infrastructure
         /// <param name="host">The SMTP server host, used during TLS authentication.</param>
         /// <returns>A SecureStreamContext that contains the SSL stream and the associated to it reader and writer.</returns>
         /// <exception cref="AuthenticationException">Thrown if the TLS handshake fails within AuthenticateAsClientAsync invocation.</exception>
-        private async Task<SecureStreamContext> EstablishSecureConnectionAsync(NetworkStream stream, string host)
+        private async Task<SecureStreamContextDto> EstablishSecureConnectionAsync(NetworkStream stream, string host)
         {
             var sslStream = new SslStream(stream, leaveInnerStreamOpen: false);
 
@@ -88,7 +88,7 @@ namespace EmailClient.Infrastructure
             await SendCommandAsync(writer, SmtpCommands.Ehlo);
             await ReadMultilineResponseAsync(reader);
 
-            return new SecureStreamContext
+            return new SecureStreamContextDto
             {
                 Stream = sslStream,
                 Reader = reader,
@@ -105,7 +105,7 @@ namespace EmailClient.Infrastructure
                 throw new Exception($"{nameof(SmtpCommands.StartTls)} failed");
         }
 
-        private async Task SendEmailDataAsync(SecureStreamContext context, EmailMessage message)
+        private async Task SendEmailDataAsync(SecureStreamContextDto context, EmailMessageDto message)
         {
             await SendCommandAsync(context.Writer, SmtpCommands.MailFrom.Replace("%%email%%", message.From));
             var mailFromResponse = await ReadResponseAsync(context.Reader);
@@ -140,7 +140,7 @@ namespace EmailClient.Infrastructure
         /// <exception cref="AuthenticationException">
         /// Thrown if the server does not prompt for username/password properly, or authentication fails.
         /// </exception>
-        private async Task AuthenticateAsync(SecureStreamContext context, string username, string password)
+        private async Task AuthenticateAsync(SecureStreamContextDto context, string username, string password)
         {
             await SendCommandAsync(context.Writer, SmtpCommands.AuthLogin);
             var usernamePrompt = await ReadResponseAsync(context.Reader);
@@ -166,7 +166,7 @@ namespace EmailClient.Infrastructure
         /// </summary>
         /// <param name="writer">The stream writer used to write to the SMTP server.</param>
         /// <param name="message">The email message to be sent.</param>
-        private async Task SendEmailContentAsync(SecureStreamContext context, EmailMessage message)
+        private async Task SendEmailContentAsync(SecureStreamContextDto context, EmailMessageDto message)
         {
             await context.Writer.WriteLineAsync($"Subject: {message.Subject}");
             await context.Writer.WriteLineAsync($"To: {message.To}");
@@ -187,7 +187,7 @@ namespace EmailClient.Infrastructure
         /// </summary>
         /// <param name="writer">The stream writer used to write to the SMTP server.</param>
         /// <param name="writer">The stream reader used to write to the SMTP server.</param>
-        private async Task TerminateConnectionAsync(SecureStreamContext context)
+        private async Task TerminateConnectionAsync(SecureStreamContextDto context)
         {
             await SendCommandAsync(context.Writer, SmtpCommands.Quit);
             var quitResponse = await ReadResponseAsync(context.Reader);

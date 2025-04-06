@@ -4,6 +4,6 @@ namespace EmailClient.Core.Responses
 {
     public class EmailResponse
     {
-        public EmailMessage Email { get; set; }
+        public EmailMessageDto Email { get; set; }
     }
 }

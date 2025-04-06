@@ -1,6 +1,6 @@
 ﻿namespace EmailClient.Core.DTOs
 {
-    public record EmailMessage(
+    public record EmailMessageDto(
         string From,
         string To,
         string Subject,

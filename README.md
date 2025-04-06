@@ -40,14 +40,14 @@ Paste this into your root `appsettings.json` file and **replace with your own cr
 
   "ImapSettings": {
     "Host": "{replace-placeholder}",     // Replace with your IMAP host
-    "Port": "993",                       // Usually 993 for IMAP over SSL
+    "Port": "993",                       // Port 993 for IMAP over SSL/TLS
     "Username": "{replace-placeholder}",
     "Password": "{replace-placeholder}"
   },
 
   "SmtpSettings": {
     "Host": "{replace-placeholder}", // Replace with your SMTP host
-    "Port": "587",
+    "Port": "587",                   // Port 587 (default)
     "Username": "{replace-placeholder}",
     "Password": "{replace-placeholder}"
   }
@@ -59,4 +59,7 @@ Paste this into your root `appsettings.json` file and **replace with your own cr
 ## Reference
 
 - [RFC 5321 – Simple Mail Transfer Protocol (SMTP)](https://datatracker.ietf.org/doc/html/rfc5321)
-- [How does SMTP work](https://mailtrap.io/blog/smtp/#:~:text=SMTP%20or%20Simple%20Mail%20Transfer,defining%20the%20rules%20of%20communication.)
+- [SMTP: The Protocol Behind Email Delivery – What Is It and How Does It Work](https://mailtrap.io/blog/smtp/)
+
+- [RFC 3501 - INTERNET MESSAGE ACCESS PROTOCOL](https://datatracker.ietf.org/doc/html/rfc3501)
+- [A Deep Dive Into IMAP: What Is It and How Does it Work?](https://mailtrap.io/blog/imap/)

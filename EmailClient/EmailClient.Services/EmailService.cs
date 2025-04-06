@@ -8,10 +8,12 @@ namespace EmailClient.Services
     public class EmailService : IEmailService
     {
         public readonly ISmtpClient _smtpClient;
+        public readonly IImapClient _imapClient;
 
-        public EmailService(ISmtpClient smtpClient)
+        public EmailService(ISmtpClient smtpClient, IImapClient imapClient)
         {
             _smtpClient = smtpClient;
+            _imapClient = imapClient;
         }
 
         public Task GetEmailByIdAsync()
@@ -19,12 +21,12 @@ namespace EmailClient.Services
             throw new NotImplementedException();
         }
 
-        public Task GetEmailSubjectsAsync()
+        public async Task GetEmailsAsync(GetEmailsRequest request)
         {
-            throw new NotImplementedException();
+            var result = await _imapClient.ReadEmailsAsync(request);
         }
 
-        public async Task SendEmailAsync(EmailMessageRequest request)
+        public async Task SendEmailAsync(SendEmailRequest request)
         {
             if (!IsValidEmailAddress(request.From) || !IsValidEmailAddress(request.To))
             {
@@ -32,7 +34,7 @@ namespace EmailClient.Services
                 throw new InvalidDataException("Invalid email address format");
             }
 
-            var emailMessage = new EmailMessage(request.From, request.To, request.Subject, request.Body);
+            var emailMessage = new EmailMessageDto(request.From, request.To, request.Subject, request.Body);
 
             await _smtpClient.SendEmailAsync(emailMessage);
         }

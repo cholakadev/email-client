@@ -1,5 +1,7 @@
-﻿using EmailClient.Core.Interfaces;
+﻿using EmailClient.Core.DTOs;
+using EmailClient.Core.Interfaces;
 using EmailClient.Core.Options;
+using EmailClient.Core.Requests;
 using Microsoft.Extensions.Options;
 
 namespace EmailClient.Infrastructure
@@ -13,7 +15,7 @@ namespace EmailClient.Infrastructure
             _settings = settings;
         }
 
-        public Task ReadEmails()
+        public async Task<List<EmailDto>> ReadEmailsAsync(GetEmailsRequest request)
         {
             throw new NotImplementedException();
         }

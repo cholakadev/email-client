@@ -4,10 +4,8 @@ namespace EmailClient.Core.Interfaces
 {
     public interface IEmailService
     {
-        Task GetEmailSubjectsAsync();
+        Task GetEmailsAsync(GetEmailsRequest request);
 
-        Task GetEmailByIdAsync();
-
-        Task SendEmailAsync(EmailMessageRequest request);
+        Task SendEmailAsync(SendEmailRequest request);
     }
 }

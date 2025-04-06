@@ -2,7 +2,7 @@
 
 namespace EmailClient.Core.DTOs
 {
-    public class SecureStreamContext
+    public class SecureStreamContextDto
     {
         public SslStream Stream { get; set; }
 

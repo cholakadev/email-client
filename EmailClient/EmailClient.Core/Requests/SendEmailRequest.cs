@@ -1,6 +1,6 @@
 ﻿namespace EmailClient.Core.Requests
 {
-    public class EmailMessageRequest
+    public class SendEmailRequest
     {
         public string From { get; set; } = string.Empty;
 
