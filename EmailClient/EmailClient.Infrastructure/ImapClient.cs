@@ -38,13 +38,12 @@ namespace EmailClient.Infrastructure
             var emails = new List<EmailDto>();
 
             var tag = 0;
-            string NextTag() => $"a{tag++:D3}";
 
             // Initial greeting
             await reader.ReadLineAsync();
 
             // Login
-            var loginTag = NextTag();
+            var loginTag = GetNextTag();
             var loginResponse = await SendCommand(
                 writer,
                 reader,
@@ -55,13 +54,13 @@ namespace EmailClient.Infrastructure
                 throw new Exception($"IMAP LOGIN failed: {loginResponse}.");
 
             // Select INBOX
-            var inboxTag = NextTag();
+            var inboxTag = GetNextTag();
             var inboxResponse = await SendCommand(writer, reader, inboxTag, "SELECT INBOX");
             if (!inboxResponse.Contains("OK"))
                 throw new Exception("Failed to select inbox: " + inboxResponse);
 
             // Search for all messages
-            var searchTag = NextTag();
+            var searchTag = GetNextTag();
             var searchResponse = await SendCommand(writer, reader, searchTag, "SEARCH ALL");
 
             // Splits the multiline result and get the first line that contains the ids after * SEARCH
@@ -77,12 +76,12 @@ namespace EmailClient.Infrastructure
             if (ids == null || !ids.Any())
                 return emails;
 
-            var fetchTag = NextTag();
+            var fetchTag = GetNextTag();
             var fetchResponse = await SendCommand(
                 writer,
                 reader,
                 fetchTag,
-                $"FETCH {string.Join(",", ids.Take(5))} (BODY[HEADER.FIELDS (SUBJECT FROM DATE)])");
+                $"FETCH {string.Join(",", ids.Take(5))} (BODY.PEEK[HEADER] BODY.PEEK[TEXT])");
 
             var lines = fetchResponse.Split('\n');
             var currentEmail = new EmailDto();
@@ -96,16 +95,17 @@ namespace EmailClient.Infrastructure
                 }
                 else if (line.StartsWith("Subject:", StringComparison.OrdinalIgnoreCase))
                 {
-                    var raw = line.Substring("Subject:".Length).Trim();
-                    var bytes = Encoding.ASCII.GetBytes(raw);
-                    currentEmail.Subject = Rfc2047.DecodeText(ParserOptions.Default, bytes);
+                    currentEmail.Subject = DecodeText(line, "Subject:");
                 }
                 else if (line.StartsWith("From:", StringComparison.OrdinalIgnoreCase))
                 {
-                    var raw = line.Substring("From:".Length).Trim();
-                    var bytes = Encoding.ASCII.GetBytes(raw);
-                    var decodedFrom = Rfc2047.DecodeText(ParserOptions.Default, bytes);
+                    var decodedFrom = DecodeText(line, "From:");
                     currentEmail.From = ExtractEmailAddress(decodedFrom);
+                }
+                else if (line.StartsWith("To:", StringComparison.OrdinalIgnoreCase))
+                {
+                    var decodedTo = DecodeText(line, "To:");
+                    currentEmail.To = ExtractEmailAddress(decodedTo);
                 }
                 else if (line.StartsWith("Date:", StringComparison.OrdinalIgnoreCase))
                 {
@@ -115,7 +115,8 @@ namespace EmailClient.Infrastructure
                 }
             }
 
-            if (currentEmail != null) emails.Add(currentEmail);
+            if (currentEmail != null)
+                emails.Add(currentEmail);
 
             return emails;
         }
@@ -142,6 +143,19 @@ namespace EmailClient.Infrastructure
         {
             var match = Regex.Match(fromHeader, @"<([^>]+)>");
             return match.Success ? match.Groups[1].Value : fromHeader;
+        }
+
+        private string DecodeText(string line, string prefix)
+        {
+            if (!line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return string.Empty;
+
+            var raw = line.Substring(prefix.Length).Trim();
+            var bytes = Encoding.ASCII.GetBytes(raw);
+
+            var decodedText = Rfc2047.DecodeText(ParserOptions.Default, bytes);
+
+            return decodedText;
         }
     }
 }
