@@ -9,6 +9,7 @@ using System.Text;
 using MimeKit;
 using MimeKit.Utils;
 using System.Text.RegularExpressions;
+using EmailClient.Core.Constants;
 
 namespace EmailClient.Infrastructure
 {
@@ -22,7 +23,6 @@ namespace EmailClient.Infrastructure
             _settings = settings;
         }
 
-        // TODO: Extract the IMAP commands into separate static class with constants to avoid magic strings across the app.
         public async Task<List<EmailDto>> ReadEmailsAsync(GetEmailsRequest request)
         {
             var settings = _settings.CurrentValue;
@@ -37,9 +37,6 @@ namespace EmailClient.Infrastructure
 
             var emails = new List<EmailDto>();
 
-            var tag = 0;
-
-            // Initial greeting
             await reader.ReadLineAsync();
 
             // Login
@@ -48,20 +45,21 @@ namespace EmailClient.Infrastructure
                 writer,
                 reader,
                 loginTag,
-                $"LOGIN {_settings.CurrentValue.Username} {_settings.CurrentValue.Password}");
+                ImapCommands.Login(_settings.CurrentValue.Username, _settings.CurrentValue.Password));
 
             if (!loginResponse.Contains("OK"))
                 throw new Exception($"IMAP LOGIN failed: {loginResponse}.");
 
             // Select INBOX
             var inboxTag = GetNextTag();
-            var inboxResponse = await SendCommand(writer, reader, inboxTag, "SELECT INBOX");
+            var inboxResponse = await SendCommand(writer, reader, inboxTag, ImapCommands.SelectInbox);
             if (!inboxResponse.Contains("OK"))
                 throw new Exception($"Failed to select inbox: {inboxResponse}.");
 
             // Search for all messages
             var searchTag = GetNextTag();
-            var searchResponse = await SendCommand(writer, reader, searchTag, "SEARCH ALL");
+            // TODO: Create a DTO to transfer those properties
+            var searchResponse = await SendCommand(writer, reader, searchTag, ImapCommands.SearchAll);
 
             // Splits the multiline result and get the first line that contains the ids after * SEARCH
             // Skips 2 positions since they are '*' and 'SEARCH' and parses the others into array that contains the ids to be
@@ -81,35 +79,39 @@ namespace EmailClient.Infrastructure
                 writer,
                 reader,
                 fetchTag,
-                $"FETCH {string.Join(",", ids.Take(5))} (BODY.PEEK[HEADER] BODY.PEEK[TEXT])");
+                ImapCommands.FetchDataPaginated(ids, request.Take)); // TODO: Add skip
 
             var lines = fetchResponse.Split('\n');
-            var currentEmail = new EmailDto();
+            EmailDto currentEmail = null;
 
             foreach (var line in lines)
             {
                 if (line.StartsWith("*") && line.Contains("FETCH"))
                 {
-                    if (currentEmail != null) emails.Add(currentEmail);
+                    if (currentEmail != null)
+                        emails.Add(currentEmail);
+
                     currentEmail = new EmailDto();
+
+                    continue;
                 }
                 else if (line.StartsWith("Subject:", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentEmail.Subject = DecodeText(line, "Subject:");
+                    currentEmail!.Subject = DecodeText(line, "Subject:");
                 }
                 else if (line.StartsWith("From:", StringComparison.OrdinalIgnoreCase))
                 {
                     var decodedFrom = DecodeText(line, "From:");
-                    currentEmail.From = ExtractEmailAddress(decodedFrom);
+                    currentEmail!.From = ExtractEmailAddress(decodedFrom);
                 }
                 else if (line.StartsWith("To:", StringComparison.OrdinalIgnoreCase))
                 {
                     var decodedTo = DecodeText(line, "To:");
-                    currentEmail.To = ExtractEmailAddress(decodedTo);
+                    currentEmail!.To = ExtractEmailAddress(decodedTo);
                 }
                 else if (line.StartsWith("Date:", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentEmail.Date = DateTime.TryParse(line.Substring("Date:".Length).Trim(), out var date)
+                    currentEmail!.Date = DateTime.TryParse(line.Substring("Date:".Length).Trim(), out var date)
                         ? date
                         : DateTime.MinValue;
                 }
