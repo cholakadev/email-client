@@ -1,6 +1,7 @@
 ﻿using EmailClient.Core.DTOs;
 using EmailClient.Core.Interfaces;
 using EmailClient.Core.Requests;
+using EmailClient.Core.Responses;
 using System.Net.Mail;
 
 namespace EmailClient.Services
@@ -16,14 +17,14 @@ namespace EmailClient.Services
             _imapClient = imapClient;
         }
 
-        public Task GetEmailByIdAsync()
+        public async Task<GetEmailsResponse> GetEmailsAsync(GetEmailsRequest request)
         {
-            throw new NotImplementedException();
-        }
+            var emailsResult = await _imapClient.ReadEmailsAsync(request);
 
-        public async Task GetEmailsAsync(GetEmailsRequest request)
-        {
-            var result = await _imapClient.ReadEmailsAsync(request);
+            var response = new GetEmailsResponse();
+            response.Emails = emailsResult;
+
+            return response;
         }
 
         public async Task SendEmailAsync(SendEmailRequest request)
