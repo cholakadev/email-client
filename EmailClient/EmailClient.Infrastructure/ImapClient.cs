@@ -64,22 +64,27 @@ namespace EmailClient.Infrastructure
             // Splits the multiline result and get the first line that contains the ids after * SEARCH
             // Skips 2 positions since they are '*' and 'SEARCH' and parses the others into array that contains the ids to be
             // used later in the FETCH command
-            var ids = searchResponse
+            var emailIds = searchResponse
                 .Split('\n')
                 .FirstOrDefault(x => x.StartsWith("* SEARCH"))?
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries)
                 .Skip(2)
                 .ToArray();
 
-            if (ids == null || !ids.Any())
+            if (emailIds == null || !emailIds.Any())
                 return emails;
+
+            var paginatedEmailIds = emailIds
+                .Skip(request.Skip)
+                .Take(request.Take)
+                .ToArray();
 
             var fetchTag = GetNextTag();
             var fetchResponse = await SendCommand(
                 writer,
                 reader,
                 fetchTag,
-                ImapCommands.FetchDataPaginated(ids, request.Take)); // TODO: Add skip
+                ImapCommands.FetchDataPaginated(paginatedEmailIds));
 
             var lines = fetchResponse.Split('\n');
             EmailDto currentEmail = null;
