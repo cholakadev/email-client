@@ -18,8 +18,8 @@ namespace EmailClient.Presentation.API.Controllers
         [HttpGet]
         public async Task<IResult> GetEmailsAsync([FromQuery] GetEmailsRequest request)
         {
-            await _emailService.GetEmailsAsync(request);
-            return Results.Ok();
+            var response = await _emailService.GetEmailsAsync(request);
+            return Results.Ok(response);
         }
 
         [HttpPost]
