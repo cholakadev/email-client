@@ -41,7 +41,7 @@ namespace EmailClient.Infrastructure
 
             // Login
             var loginTag = GetNextTag();
-            var loginResponse = await SendCommand(
+            var loginResponse = await SendCommandAsync(
                 writer,
                 reader,
                 loginTag,
@@ -52,14 +52,13 @@ namespace EmailClient.Infrastructure
 
             // Select INBOX
             var inboxTag = GetNextTag();
-            var inboxResponse = await SendCommand(writer, reader, inboxTag, ImapCommands.SelectInbox);
+            var inboxResponse = await SendCommandAsync(writer, reader, inboxTag, ImapCommands.SelectInbox);
             if (!inboxResponse.Contains("OK"))
                 throw new Exception($"Failed to select inbox: {inboxResponse}.");
 
             // Search for all messages
             var searchTag = GetNextTag();
-            // TODO: Create a DTO to transfer those properties
-            var searchResponse = await SendCommand(writer, reader, searchTag, ImapCommands.SearchAll);
+            var searchResponse = await SendCommandAsync(writer, reader, searchTag, ImapCommands.SearchAll);
 
             // Splits the multiline result and get the first line that contains the ids after * SEARCH
             // Skips 2 positions since they are '*' and 'SEARCH' and parses the others into array that contains the ids to be
@@ -80,7 +79,7 @@ namespace EmailClient.Infrastructure
                 .ToArray();
 
             var fetchTag = GetNextTag();
-            var fetchResponse = await SendCommand(
+            var fetchResponse = await SendCommandAsync(
                 writer,
                 reader,
                 fetchTag,
@@ -129,7 +128,7 @@ namespace EmailClient.Infrastructure
         }
 
         // Sending command and reads the server response
-        private async Task<string> SendCommand(StreamWriter writer, StreamReader reader, string tag, string command)
+        private async Task<string> SendCommandAsync(StreamWriter writer, StreamReader reader, string tag, string command)
         {
             await writer.WriteLineAsync($"{tag} {command}");
             var response = new StringBuilder();

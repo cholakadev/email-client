@@ -7,6 +7,6 @@
         public const string AuthSuccess = "235";
         public const string CredentialsPrompt = "334";
         public const string Bye = "221";
-        public const string ServiceReady = "220"; // Initial greeing ot STARTTLS accepted
+        public const string ServiceReady = "220"; // Initial greeing or STARTTLS accepted
     }
 }
