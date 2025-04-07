@@ -1,6 +1,7 @@
 using EmailClient.Core.Interfaces;
 using EmailClient.Core.Options;
 using EmailClient.Infrastructure;
+using EmailClient.Presentation.API.Middlewares;
 using EmailClient.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,8 @@ builder.Services.AddScoped<ISmtpClient, SmtpClient>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

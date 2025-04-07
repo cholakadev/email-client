@@ -10,15 +10,14 @@ This project is a custom-built ASP.NET Core Web API for sending and receiving em
 - Read emails using **IMAP over SSL**
 - Fully secure using `SslStream`
 - Configurable via `appsettings.json`
-- Works with **Mailtrap** and other SMTP servers for safe development and testing
+- Works with **Mailtrap**, **Gmail** and other SMTP servers for safe development and testing
 
 ---
 
 ## 🚀 Getting Started
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- Internet connection
-- (Optional) Free Mailtrap account — [https://mailtrap.io](https://mailtrap.io)
+- Internet connection for work with external SMTP server
 
 ---
 
