@@ -1,9 +1,5 @@
-using EmailClient.Core.Interfaces;
-using EmailClient.Core.Options;
-using EmailClient.Infrastructure;
 using EmailClient.Presentation.API.Extensions;
 using EmailClient.Presentation.API.Middlewares;
-using EmailClient.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,11 +7,9 @@ builder.Services.AddControllers();
 builder.Services.AddRouting(o => o.LowercaseUrls = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.Configure<ImapSettings>(builder.Configuration.GetSection(ImapSettings.SectionKey));
-builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection(SmtpSettings.SectionKey));
-builder.Services.AddScoped<IImapClient, ImapClient>();
-builder.Services.AddScoped<ISmtpClient, SmtpClient>();
-builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddOptions(builder.Configuration);
+builder.Services.RegisterInfrastructure();
+builder.Services.RegisterServices();
 builder.Services.AddValidatorsConfiguration();
 
 var app = builder.Build();

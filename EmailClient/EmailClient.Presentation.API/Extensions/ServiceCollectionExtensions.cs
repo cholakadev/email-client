@@ -1,4 +1,8 @@
-﻿using EmailClient.Presentation.API.Validators;
+﻿using EmailClient.Core.Interfaces;
+using EmailClient.Core.Options;
+using EmailClient.Infrastructure;
+using EmailClient.Presentation.API.Validators;
+using EmailClient.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 
@@ -17,5 +21,20 @@ namespace EmailClient.Presentation.API.Extensions
 
             services.AddValidatorsFromAssemblyContaining<BaseValidator<object>>();
         }
+
+        public static void AddOptions(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<ImapSettings>(configuration.GetSection(ImapSettings.SectionKey));
+            services.Configure<SmtpSettings>(configuration.GetSection(SmtpSettings.SectionKey));
+        }
+
+        public static void RegisterInfrastructure(this IServiceCollection services)
+        {
+            services.AddScoped<IImapClient, ImapClient>();
+            services.AddScoped<ISmtpClient, SmtpClient>();
+        }
+
+        public static void RegisterServices(this IServiceCollection services)
+            => services.AddScoped<IEmailService, EmailService>();
     }
 }
