@@ -1,6 +1,7 @@
 using EmailClient.Core.Interfaces;
 using EmailClient.Core.Options;
 using EmailClient.Infrastructure;
+using EmailClient.Presentation.API.Extensions;
 using EmailClient.Presentation.API.Middlewares;
 using EmailClient.Services;
 
@@ -15,6 +16,7 @@ builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection(SmtpSe
 builder.Services.AddScoped<IImapClient, ImapClient>();
 builder.Services.AddScoped<ISmtpClient, SmtpClient>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddValidatorsConfiguration();
 
 var app = builder.Build();
 
