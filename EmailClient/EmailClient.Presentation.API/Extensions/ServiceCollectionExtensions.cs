@@ -1,6 +1,7 @@
 ﻿using EmailClient.Core.Interfaces;
 using EmailClient.Core.Options;
 using EmailClient.Infrastructure;
+using EmailClient.Presentation.API.Interceptors;
 using EmailClient.Presentation.API.Validators;
 using EmailClient.Services;
 using FluentValidation;
@@ -20,6 +21,7 @@ namespace EmailClient.Presentation.API.Extensions
             services.AddFluentValidationAutoValidation(options => { options.DisableDataAnnotationsValidation = true; });
 
             services.AddValidatorsFromAssemblyContaining<BaseValidator<object>>();
+            services.AddTransient<IValidatorInterceptor, ValidatorInterceptor>();
         }
 
         public static void AddOptions(this IServiceCollection services, IConfiguration configuration)
