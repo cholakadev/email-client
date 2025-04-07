@@ -1,12 +1,13 @@
 ﻿using EmailClient.Core.Requests;
 using EmailClient.Core.Responses;
+using EmailClient.Core.Results;
 
 namespace EmailClient.Core.Interfaces
 {
     public interface IEmailService
     {
-        Task<GetEmailsResponse> GetEmailsAsync(GetEmailsRequest request);
+        Task<ResultT<GetEmailsResponse>> GetEmailsAsync(GetEmailsRequest request);
 
-        Task SendEmailAsync(SendEmailRequest request);
+        Task<Result> SendEmailAsync(SendEmailRequest request);
     }
 }

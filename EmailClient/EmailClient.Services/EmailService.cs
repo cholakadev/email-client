@@ -1,7 +1,9 @@
 ﻿using EmailClient.Core.DTOs;
+using EmailClient.Core.Errors;
 using EmailClient.Core.Interfaces;
 using EmailClient.Core.Requests;
 using EmailClient.Core.Responses;
+using EmailClient.Core.Results;
 using System.Net.Mail;
 
 namespace EmailClient.Services
@@ -17,27 +19,31 @@ namespace EmailClient.Services
             _imapClient = imapClient;
         }
 
-        public async Task<GetEmailsResponse> GetEmailsAsync(GetEmailsRequest request)
+        public async Task<ResultT<GetEmailsResponse>> GetEmailsAsync(GetEmailsRequest request)
         {
             var emailsResult = await _imapClient.ReadEmailsAsync(request);
 
             var response = new GetEmailsResponse();
             response.Emails = emailsResult;
 
-            return response;
+            return ResultT<GetEmailsResponse>.Success(response);
         }
 
-        public async Task SendEmailAsync(SendEmailRequest request)
+        public async Task<Result> SendEmailAsync(SendEmailRequest request)
         {
+            // TODO: Could return Result.Failure(EmailClientErrors.InvalidEmailAddressFormat) and map to appropriate response
+            // in the controller action by by checking IsFailure & IsSuccess
             if (!IsValidEmailAddress(request.From) || !IsValidEmailAddress(request.To))
-            {
-                // Could be done best with Result pattern -> return EmailClientResults.InvalidEmailAddressFormat (w status code 400 Bad Request)
-                throw new InvalidDataException("Invalid email address format");
-            }
+                throw new EmailClientValidationException(
+                    new ValidationError(
+                        EmailClientErrors.InvalidEmailAddressFormat.Code,
+                        EmailClientErrors.InvalidEmailAddressFormat.Description));
 
             var emailMessage = new EmailMessageDto(request.From, request.To, request.Subject, request.Body);
 
             await _smtpClient.SendEmailAsync(emailMessage);
+
+            return Result.Success();
         }
 
         private bool IsValidEmailAddress(string emailAddress)
