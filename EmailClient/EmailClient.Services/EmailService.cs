@@ -31,13 +31,8 @@ namespace EmailClient.Services
 
         public async Task<Result> SendEmailAsync(SendEmailRequest request)
         {
-            // TODO: Could return Result.Failure(EmailClientErrors.InvalidEmailAddressFormat) and map to appropriate response
-            // in the controller action by by checking IsFailure & IsSuccess
             if (!IsValidEmailAddress(request.From) || !IsValidEmailAddress(request.To))
-                throw new EmailClientValidationException(
-                    new ValidationError(
-                        EmailClientErrors.InvalidEmailAddressFormat.Code,
-                        EmailClientErrors.InvalidEmailAddressFormat.Description));
+                return Result.Failure(EmailClientErrors.InvalidEmailAddressFormat);
 
             var emailMessage = new EmailMessageDto(request.From, request.To, request.Subject, request.Body);
 

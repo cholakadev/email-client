@@ -1,4 +1,5 @@
 ﻿using EmailClient.Core.DTOs;
+using EmailClient.Core.Errors;
 using EmailClient.Core.Interfaces;
 using EmailClient.Core.Requests;
 using EmailClient.Services;
@@ -33,9 +34,10 @@ namespace EmailClient.Tests.Services
             };
 
             // Act
-            await _emailService.SendEmailAsync(request);
+            var result = await _emailService.SendEmailAsync(request);
 
             // Assert
+            Assert.True(result.IsSuccess);
             await _smtpClient.Received(1).SendEmailAsync(Arg.Is<EmailMessageDto>(msg =>
                 msg.From == request.From &&
                 msg.To == request.To &&
@@ -58,10 +60,12 @@ namespace EmailClient.Tests.Services
                 Body = "Body"
             };
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidDataException>(() => _emailService.SendEmailAsync(request));
-            Assert.Equal("Invalid email address format", ex.Message);
+            // Act
+            var result = await _emailService.SendEmailAsync(request);
 
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(EmailClientErrors.InvalidEmailAddressFormat, result.Error);
             await _smtpClient.DidNotReceive().SendEmailAsync(Arg.Any<EmailMessageDto>());
         }
 
@@ -75,10 +79,10 @@ namespace EmailClient.Tests.Services
             var expectedEmailBody = "Test Body 1";
 
             var expectedEmails = new List<EmailDto>
-            {
-                new EmailDto { From = "123@example.com", To = "789@example.com", Subject = expectedEmailSubject, Body = "Test Body 1", Date = DateTime.UtcNow },
-                new EmailDto { From = "456@example.com", To = "91011@example.com", Subject = "Test 2", Body = expectedEmailBody, Date = DateTime.UtcNow }
-            };
+    {
+        new EmailDto { From = "123@example.com", To = "789@example.com", Subject = expectedEmailSubject, Body = "Test Body 1", Date = DateTime.UtcNow },
+        new EmailDto { From = "456@example.com", To = "91011@example.com", Subject = "Test 2", Body = expectedEmailBody, Date = DateTime.UtcNow }
+    };
 
             _imapClient.ReadEmailsAsync(request).Returns(expectedEmails);
 
@@ -86,11 +90,10 @@ namespace EmailClient.Tests.Services
             var result = await _emailService.GetEmailsAsync(request);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Emails.Count);
-            Assert.Equal(expectedEmailSubject, result.Emails[0].Subject);
-            Assert.Equal(expectedEmailBody, result.Emails[1].Body);
-
+            Assert.True(result.IsSuccess);
+            Assert.Equal(2, result.Data.Emails.Count);
+            Assert.Equal(expectedEmailSubject, result.Data.Emails[0].Subject);
+            Assert.Equal(expectedEmailBody, result.Data.Emails[1].Body);
             await _imapClient.Received(1).ReadEmailsAsync(request);
         }
 
@@ -105,9 +108,9 @@ namespace EmailClient.Tests.Services
             var result = await _emailService.GetEmailsAsync(request);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Empty(result.Emails);
-
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Data);
+            Assert.Empty(result.Data.Emails);
             await _imapClient.Received(1).ReadEmailsAsync(request);
         }
     }
