@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using EmailClient.Core.Errors;
+using System.Net;
 using System.Text.Json;
 
 namespace EmailClient.Presentation.API.Middlewares
@@ -25,20 +26,27 @@ namespace EmailClient.Presentation.API.Middlewares
             {
                 _logger.LogError(ex, "Unhandled exception occurred");
 
+                var response = context.Response;
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                var errorStatusCode = (ex as HttpRequestException)?.StatusCode;
 
-                // For production we should remove the error details since they can reveal some kind of sensitive info
-                // But I leave it like this for the POC
-                var response = new
+                response.StatusCode = (int?)errorStatusCode ?? ex switch
                 {
-                    error = "An unexpected error occurred.",
-                    details = ex.Message
+                    KeyNotFoundException => (int)HttpStatusCode.NotFound,
+                    EmailClientValidationException => (int)HttpStatusCode.BadRequest,
+                    _ => (int)HttpStatusCode.InternalServerError, // unhandled
                 };
 
-                var json = JsonSerializer.Serialize(response);
+                _logger.LogError(ex, "Unhandled exception occurred.");
 
-                await context.Response.WriteAsync(json);
+                if (ex is EmailClientValidationException e)
+                {
+                    _logger.LogError(e.Message, e.Error);
+                    var errorResponse = new Error(e.Error.Code, e.Error.Message, HttpStatusCode.BadRequest);
+                    await response.WriteAsync(JsonSerializer.Serialize(errorResponse));
+                }
+                else if (response.StatusCode == (int)HttpStatusCode.InternalServerError)
+                    await response.WriteAsync(JsonSerializer.Serialize(EmailClientErrors.InternalServerError));
             }
         }
     }
