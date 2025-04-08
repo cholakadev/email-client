@@ -38,12 +38,10 @@ namespace EmailClient.Infrastructure
         /// <exception cref="AuthenticationException">Thrown if authentication with the SMTP server fails.</exception>
         public async Task SendEmailAsync(EmailMessageDto message)
         {
-            var port = int.Parse(_settings.CurrentValue.Port);
-
-            if (port == 465)
+            if (!_settings.CurrentValue.RequiresStartTls)
             {
                 using var tcpClient = new TcpClient();
-                await tcpClient.ConnectAsync(_settings.CurrentValue.Host, port);
+                await tcpClient.ConnectAsync(_settings.CurrentValue.Host, int.Parse(_settings.CurrentValue.Port));
 
                 var sslStream = new SslStream(tcpClient.GetStream(), leaveInnerStreamOpen: false);
                 try
