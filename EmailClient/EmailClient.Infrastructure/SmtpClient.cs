@@ -38,28 +38,68 @@ namespace EmailClient.Infrastructure
         /// <exception cref="AuthenticationException">Thrown if authentication with the SMTP server fails.</exception>
         public async Task SendEmailAsync(EmailMessageDto message)
         {
-            // Establishes TCP connection with the SMTP server
-            using var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync(_settings.CurrentValue.Host, int.Parse(_settings.CurrentValue.Port));
+            var port = int.Parse(_settings.CurrentValue.Port);
 
-            using var networkStream = tcpClient.GetStream();
-            using var plainReader = new StreamReader(networkStream, Encoding.ASCII);
-            using var plainWriter = new StreamWriter(networkStream, Encoding.ASCII) { AutoFlush = true };
+            if (port == 465)
+            {
+                using var tcpClient = new TcpClient();
+                await tcpClient.ConnectAsync(_settings.CurrentValue.Host, port);
 
-            var greetingResponse = await ReadResponseAsync(plainReader);
-            if (!greetingResponse.StartsWith(SmtpResponseCodes.ServiceReady))
-                throw new Exception($"SMTP server did not respond with 220 Service Ready. Response: {greetingResponse}");
+                var sslStream = new SslStream(tcpClient.GetStream(), leaveInnerStreamOpen: false);
+                try
+                {
+                    await sslStream.AuthenticateAsClientAsync(_settings.CurrentValue.Host);
+                }
+                catch (Exception ex)
+                {
+                    throw new AuthenticationException($"TLS handshake failed with host '{_settings.CurrentValue.Host}'.", ex);
+                }
 
-            await SendCommandAsync(plainWriter, SmtpCommands.Ehlo);
-            await ReadMultilineResponseAsync(plainReader);
+                var reader = new StreamReader(sslStream, Encoding.ASCII);
+                var writer = new StreamWriter(sslStream, Encoding.ASCII) { AutoFlush = true };
 
-            // Upgrade to secure connection using TLS/SSL
-            await UpgradeToTlsConnectionAsync(plainWriter, plainReader);
-            var secureStreamContext = await EstablishSecureConnectionAsync(networkStream, _settings.CurrentValue.Host);
+                var greeting = await ReadResponseAsync(reader);
+                if (!greeting.StartsWith(SmtpResponseCodes.ServiceReady))
+                    throw new Exception($"SMTP server did not respond with 220. Response: {greeting}");
 
-            // Authenticates with Base64 credentials and transmits the email message with the sender and recipient data
-            await AuthenticateAsync(secureStreamContext, _settings.CurrentValue.Username, _settings.CurrentValue.Password);
-            await SendEmailDataAsync(secureStreamContext, message);
+                await SendCommandAsync(writer, SmtpCommands.Ehlo);
+                await ReadMultilineResponseAsync(reader);
+
+                var context = new SecureStreamContextDto
+                {
+                    Stream = sslStream,
+                    Reader = reader,
+                    Writer = writer
+                };
+
+                await AuthenticateAsync(context, _settings.CurrentValue.Username, _settings.CurrentValue.Password);
+                await SendEmailDataAsync(context, message);
+            }
+            else
+            {
+                // Establishes TCP connection with the SMTP server
+                using var tcpClient = new TcpClient();
+                await tcpClient.ConnectAsync(_settings.CurrentValue.Host, int.Parse(_settings.CurrentValue.Port));
+
+                using var networkStream = tcpClient.GetStream();
+                using var plainReader = new StreamReader(networkStream, Encoding.ASCII);
+                using var plainWriter = new StreamWriter(networkStream, Encoding.ASCII) { AutoFlush = true };
+
+                var greetingResponse = await ReadResponseAsync(plainReader);
+                if (!greetingResponse.StartsWith(SmtpResponseCodes.ServiceReady))
+                    throw new Exception($"SMTP server did not respond with 220 Service Ready. Response: {greetingResponse}");
+
+                await SendCommandAsync(plainWriter, SmtpCommands.Ehlo);
+                await ReadMultilineResponseAsync(plainReader);
+
+                // Upgrade to secure connection using TLS/SSL
+                await UpgradeToTlsConnectionAsync(plainWriter, plainReader);
+                var secureStreamContext = await EstablishSecureConnectionAsync(networkStream, _settings.CurrentValue.Host);
+
+                // Authenticates with Base64 credentials and transmits the email message with the sender and recipient data
+                await AuthenticateAsync(secureStreamContext, _settings.CurrentValue.Username, _settings.CurrentValue.Password);
+                await SendEmailDataAsync(secureStreamContext, message);
+            }
         }
 
         /// <summary>
